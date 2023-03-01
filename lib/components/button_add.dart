@@ -12,9 +12,15 @@ class ButtonAdd extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
+    return ElevatedButton(
       onPressed: onClick,
-      color: Theme.of(context).primaryColor,
+      style: ButtonStyle(
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+        ),
+      ),
       child: Text(
         text,
         style: const TextStyle(

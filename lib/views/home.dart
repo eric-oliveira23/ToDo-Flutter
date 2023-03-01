@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:hive/hive.dart';
-import 'package:todo/components/dialog_add.dart';
 import 'package:todo/data/database.dart';
+import '../components/add_sheet_content.dart';
 import '../components/todo_tile.dart';
 
 class HomePage extends StatefulWidget {
@@ -45,35 +45,26 @@ class _HomePageState extends State<HomePage> {
   //Save a task
   void saveTask() {
     if (_controller.text.isEmpty) {
-      showSnackbar();
+      return;
     } else {
       setState(() {
         db.todoList.add([_controller.text, false]);
       });
       db.updateDatabase();
       Navigator.pop(context);
+
+      showSnackbar('Tarefa ${_controller.text} adicionada.');
       _controller.clear();
     }
   }
 
-  void fabClicked() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return DialogAdd(
-          controller: _controller,
-          onSave: saveTask,
-          onCancel: () => Navigator.pop(context),
-        );
-      },
-    );
-  }
-
   //Delete task
   void deleteTask(int index) {
+    showSnackbar('Tarefa ${db.todoList[index][0]} deletada.');
     setState(() {
       db.todoList.removeAt(index);
     });
+
     db.updateDatabase();
   }
 
@@ -92,7 +83,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          fabClicked();
+          showAddSheet();
         },
         child: const Icon(Icons.add),
       ),
@@ -124,11 +115,33 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void showSnackbar() {
+  void showSnackbar(String text) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Você não pode salvar uma tarefa vazia!'),
+      SnackBar(
+        content: Text(text),
       ),
+    );
+  }
+
+  void showAddSheet() {
+    showModalBottomSheet<void>(
+      isScrollControlled: true,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(25.0),
+        ),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: AddSheetContent(
+            controller: _controller,
+            onSave: () => saveTask(),
+            onCancel: () => Navigator.pop(context),
+          ),
+        );
+      },
     );
   }
 }
